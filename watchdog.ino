@@ -1,41 +1,44 @@
 /*
- * ESP8266 NodeMCU Real Time Dual Data Graph 
+ * ESP8266 NodeMCU Real Time Data Graph 
  * Updates and Gets data from webpage without page refresh
  * based on something from https://circuits4you.com
- * reorganized and extended by Gus Mueller, April 2022
+ * reorganized and extended by Gus Mueller, April 24 2022
+ * now also resets a Moxee Cellular hotspot if there are network problems
+ * since for those do not include watchdog behaviors
  */
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
-#include <DHT.h>
-
-#include <Wire.h>
-#include <SFE_BMP180.h>
-
+#include "Zanshin_BME680.h"  // Include the BME680 Sensor library
  
-#define DHTPIN 2 // Digital pin 4//2
-// #define DHTTYPE DHT11 // DHT 11
-// #define DHTTYPE DHT22 // DHT 22, AM2302, AM2321
-#define DHTTYPE DHT21 // DHT 21, AM2301
-DHT dht(DHTPIN, DHTTYPE);
 
-//SSID and Password of your WiFi router
-const char* ssid = "your_ssd"; //Moxee Hotspot83_2.4G
-const char* password = "your_wifi_password";
-const char* storagePassword = "your_storage_password"; //to ensure someone doesn't store bogus data on your server
-const bool useBmp180 = false;
-//data posted to remote server so we can keep a historical record
-//url will be in the form: http://your-server.com:80/weather/data.php?data=
-const char* urlGet = "/weather/data.php";
-const char* hostGet = "151.236.9.44";
+BME680_Class BME680;  ///< Create an instance of the BME680 class
 
-const int locationId = 3; //for storing data from different locations in the backend
-const int secondsGranularity = 60; //how often to store data in the backend in seconds
+float altitude(const int32_t press, const float seaLevel = 1013.25);
+
+float altitude(const int32_t press, const float seaLevel) {
+  /*!
+  @brief     This converts a pressure measurement into a height in meters
+  @details   The corrected sea-level pressure can be passed into the function if it is known,
+             otherwise the standard atmospheric pressure of 1013.25hPa is used (see
+             https://en.wikipedia.org/wiki/Atmospheric_pressure) for details.
+  @param[in] press    Pressure reading from BME680
+  @param[in] seaLevel Sea-Level pressure in millibars
+  @return    floating point altitude in meters.
+  */ 
+  static float Altitude;
+  Altitude = 44330.0 * (1.0 - pow(((float)press / 100.0) / seaLevel, 0.1903));  // Convert into meters
+  return (Altitude);
+
+}
+
+#include "config.h"
+
 
 bool glblRemote = false;
 ESP8266WebServer server(80); //Server on port 80
-SFE_BMP180 pressure;
+
 int moxeePowerLine = 14;
 
 //ESP8266's home page:----------------------------------------------------
@@ -48,60 +51,47 @@ void handleWeatherData() {
   double humidityValue;
   double temperatureValue;
   double pressureValue;
-  String tString = "";
-  /*
-  if(useBmp180) {
-    //BMP180 code:
-    char status;
-    double p0,a;
-    status = pressure.startTemperature();
-    if (status != 0)
-    {
-      // Wait for the measurement to complete:
-      delay(status);   
-      // Retrieve the completed temperature measurement:
-      // Note that the measurement is stored in the variable T.
-      // Function returns 1 if successful, 0 if failure.
-      status = pressure.getTemperature(temperatureValue);
-      if (status != 0)
-      {
-        status = pressure.startPressure(3);
-        if (status != 0)
-        {
-          // Wait for the measurement to complete:
-          delay(status);
-          // Retrieve the completed pressure measurement:
-          // Note that the measurement is stored in the variable P.
-          // Note also that the function requires the previous temperature measurement (temperatureValue).
-          // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
-          // Function returns 1 if successful, 0 if failure.
-          status = pressure.getPressure(pressureValue,temperatureValue);
-          if (status != 0)
-          {
-            a = pressure.altitude(pressureValue,p0);
-          }
-          else Serial.println("error retrieving pressure measurement\n");
-        }
-        else Serial.println("error starting pressure measurement\n");
-      }
-      else Serial.println("error retrieving temperature measurement\n");
-    }
-    else Serial.println("error starting temperature measurement\n");
-    
-    humidityValue = NULL; //really should set unknown values as null
-  } else {
-    humidityValue = (double)dht.readHumidity();
-    temperatureValue = (double)dht.readTemperature();
-    pressureValue = NULL; //really should set unknown values as null
-  }
-  */
-  tString = NullifyOrNumber(temperatureValue) + "*" + NullifyOrNumber(pressureValue) + "*" + NullifyOrNumber(humidityValue); //using delimited data instead of JSON to keep things simple
-  Serial.println(tString);
+  double gasValue;
+  String transmissionString = "";
+
+  int32_t humidityRaw;
+  int32_t temperatureRaw;
+  int32_t pressureRaw;
+  int32_t gasRaw;
+  int32_t alt;
+  
+  static char     buf[16];                        // sprintf text buffer
+  static uint16_t loopCounter = 0;                // Display iterations
+
+  BME680.getSensorData(temperatureRaw, humidityRaw, pressureRaw, gasRaw); 
+      sprintf(buf, "%4d %3d.%02d", (loopCounter - 1) % 9999,  // Clamp to 9999,
+          (int8_t)(temperatureRaw / 100), (uint8_t)(temperatureRaw % 100));   // Temp in decidegrees
+  Serial.print(buf);
+  sprintf(buf, "%3d.%03d", (int8_t)(humidityRaw / 1000),
+          (uint16_t)(humidityRaw % 1000));  // Humidity milli-pct
+  Serial.print(buf);
+  sprintf(buf, "%7d.%02d", (int16_t)(pressureRaw / 100),
+          (uint8_t)(pressureRaw % 100));  // Pressure Pascals
+  Serial.print(buf);
+  alt = altitude(pressureRaw);                                                // temp altitude
+  sprintf(buf, "%5d.%02d", (int16_t)(alt), ((uint8_t)(alt * 100) % 100));  // Altitude meters
+  Serial.print(buf);
+  sprintf(buf, "%4d.%02d\n", (int16_t)(gasRaw / 100), (uint8_t)(gasRaw % 100));  // Resistance milliohms
+  Serial.print(buf);
+
+  humidityValue = (double)humidityRaw/1000;
+  temperatureValue = (double)temperatureRaw/100;
+  pressureValue = (double)pressureRaw/100;
+  gasValue = (double)gasRaw/100;
+
+  
+  transmissionString = NullifyOrNumber(temperatureValue) + "*" + NullifyOrNumber(pressureValue) + "*" + NullifyOrNumber(humidityValue) + "*" + NullifyOrNumber(gasValue); //using delimited data instead of JSON to keep things simple
+  Serial.println(transmissionString);
   //had to use a global, died a little inside
   if(glblRemote) {
-    sendRemoteData(tString);
+    sendRemoteData(transmissionString);
   } else {
-    server.send(200, "text/plain", tString); //Send values only to client ajax request
+    server.send(200, "text/plain", transmissionString); //Send values only to client ajax request
   }
 }
 
@@ -118,15 +108,19 @@ String NullifyOrNumber(double inVal) {
 void setup(void){
   pinMode(moxeePowerLine, OUTPUT);
   digitalWrite(moxeePowerLine, HIGH);
-  dht.begin();
-  pressure.begin();
   Serial.begin(115200);
   WiFi.begin(ssid, password);     //Connect to your WiFi router
   Serial.println("");
   // Wait for connection
+  int wiFiSeconds = 0;
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(1000);
     Serial.print(".");
+    wiFiSeconds++;
+    if(wiFiSeconds > 80) {
+      Serial.println("WiFi taking too long, rebooting Moxee");
+      rebootMoxee();
+    }
   }
   //If connection successful show IP address in serial monitor
   Serial.println("");
@@ -138,6 +132,20 @@ void setup(void){
   server.on("/weatherdata", handleWeatherData); //This page is called by java Script AJAX
   server.begin();                  //Start server
   Serial.println("HTTP server started");
+
+  Serial.print(F("- Initializing BME680 sensor\n"));
+  while (!BME680.begin(I2C_STANDARD_MODE)) {  // Start BME680 using I2C, use first device found
+    Serial.print(F("-  Unable to find BME680. Trying again in 5 seconds.\n"));
+    delay(5000);
+  }  // of loop until device is located
+  Serial.print(F("- Setting 16x oversampling for all sensors\n"));
+  BME680.setOversampling(TemperatureSensor, Oversample16);  // Use enumerated type values
+  BME680.setOversampling(HumiditySensor, Oversample16);     // Use enumerated type values
+  BME680.setOversampling(PressureSensor, Oversample16);     // Use enumerated type values
+  Serial.print(F("- Setting IIR filter to a value of 4 samples\n"));
+  BME680.setIIRFilter(IIR4);  // Use enumerated type values
+  Serial.print(F("- Setting gas measurement to 320\xC2\xB0\x43 for 150ms\n"));  // "�C" symbols
+  BME680.setGas(320, 150);  // 320�c for 150 milliseconds
 }
 
 //SEND DATA TO A REMOTE SERVER TO STORE IN A DATABASE----------------------------------------------------
@@ -162,8 +170,9 @@ void sendRemoteData(String datastring) {
       unsigned long timeoutP = millis();
       while (clientGet.available() == 0) {
         if (millis() - timeoutP > 10000) {
-          Serial.print(">>> Client Timeout: ");
+          Serial.print(">>> Client Timeout: moxee rebooted: ");
           Serial.println(hostGet);
+          rebootMoxee();
           clientGet.stop();
           return;
         }
