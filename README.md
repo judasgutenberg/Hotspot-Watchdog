@@ -1,6 +1,8 @@
 # Hotspot-Watchdog
 
-This version of my ESP8266-based Micro-Weather system (https://github.com/judasgutenberg/ESP8266-Micro-Weather) does a couple things differently.
+The reason for this project was that I have internet provided at a remote off-grid cabin which gets internet via a cellular hotspot made by a company named Moxee.  It works okay when it works, but occasionally something will happen and the hotspot loses its connection. At that point, the only way to restore service is to manually reboot the hotspot.  This normally requires a human being to be in the cabin and know what to do.  This inconvenient if it's in the middle of winter and I am on a beach in Costa Rica.  So I want a mechanism to automatically reboot the Moxee hotspot whenever it fails to provide internet to a wireless device located nearby. A good place to start with this project was my ESP8266-based Micro-Weather project (https://github.com/judasgutenberg/ESP8266-Micro-Weather), which already consists of a device that connects to the internet to log weather data. 
+
+This version of that system does a couple things differently.
 
 1. It uses the BME680 environment sensor to monitor temperature, pressure, humidity, and gas characteristics. I've had to alter the backend to log the gas information along with the weather data.
 2. It checks the network and if it cannot connect to its server or get a WiFi connection, it pulses line #D5 (digital line 14 for some reason) on the ESP8266 a couple times using a pattern I experimentally arrived at.   Driving a relay that bridges the power button wires on the Moxee hotspot, this will reset the Moxee and make it connect.  This means I do not have to drive to my cabin to reset the hotspot every time it craps out or otherwise gets confused. This makes it possible to reliably monitor the many sources of data my cabin generates.
