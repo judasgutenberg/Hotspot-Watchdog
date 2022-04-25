@@ -4,7 +4,7 @@
  * based on something from https://circuits4you.com
  * reorganized and extended by Gus Mueller, April 24 2022
  * now also resets a Moxee Cellular hotspot if there are network problems
- * since for those do not include watchdog behaviors
+ * since those do not include watchdog behaviors
  */
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
