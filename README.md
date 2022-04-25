@@ -12,7 +12,7 @@ The Moxeee hotspot is easily disassembled if you have a tiny phillips-head screw
 
 ![alt text](moxee_inside_600.jpg?raw=true)
 
-In this photo you will see the labeled power button and the two test pads I found that that carry the signals bridged by that button.  Solder wires onto those pads and run them out of your Moxee so you can simulate pressing the button. If you use the Arduino sketch to drive a relay attached to those two pads, your Moxee hotspot will be reset whenever it becomes uncommunicative, saving you hours of driving to your cabin.
+In this photo you see the labeled power button and the two test pads I found (using the continuity testing feature of a multimeter) that that carry the signals bridged by that button.  Solder wires onto those pads and run them out of your Moxee so you can simulate pressing the power button. If you use the Arduino sketch to drive a relay attached to those two pads, your Moxee hotspot will be reset whenever it becomes uncommunicative, saving you hours of driving to your cabin.
 
 
 Using the NodeMCU ESP8266 board, the BME680 board, a relay board, and the Moxee, the wiring will look like this:
