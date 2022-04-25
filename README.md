@@ -6,7 +6,7 @@ This version of my ESP8266-based Micro-Weather system (https://github.com/judasg
 2. It checks the network and if it cannot connect to its server or get a WiFi connection, it pulses line #D2 (digital line 14 for some reason) on the ESP8266 a couple times using a pattern I experimentally arrived at.   Driving a relay that bridges the power button wires on the Moxee hotspot, this will reset the Moxee and make it connect.  This means I do not have to drive to my cabin to reset the hotspot every time it craps out or otherwise gets confused.
 
 
-The Moxeee hotspot is easily disassembled if you have a tiny phillips-head screwdriver and perhaps some spudgers.  One of the six screws has a white paper tab on its head to tell Moxee that you've broken into their device, which you very much need to do to do what I did.
+The Moxeee hotspot is easily disassembled if you have a tiny phillips-head screwdriver and perhaps some spudgers. Pop off the back, remove the battery, and look in the back for six tiny screws that holds the chassis to the front. One of the six screws has a white paper tab on its head to tell Moxee that you've broken into their device, which you very much need to do to do what I did.
 
 ![alt text](moxee_inside_600.jpg?raw=true)
 
