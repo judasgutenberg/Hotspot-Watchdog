@@ -1,6 +1,4 @@
-
 <?php
-
 $servername = "localhost";
 $username = "your_sql_username";
 $database = "your_sql_database";
