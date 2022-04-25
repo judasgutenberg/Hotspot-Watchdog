@@ -93,10 +93,10 @@ if($_REQUEST) {
         $temperature = $arrData[0];
         $pressure = intval($arrData[1]);
         $humidity = $arrData[2];
-		$gasMetric = "NULL";
-		if(count($data)>3) {
-			$gasMetric = $arrData[3];
-		}
+	$gasMetric = "NULL";
+	if(count($arrData)>3) {
+		$gasMetric = $arrData[3];
+	}
         $sql = "INSERT INTO weather_data(location_id, recorded, temperature, pressure, humidity, gas_metric, wind_direction, precipitation, wind_speed, wind_increment) VALUES (" . 
           mysqli_real_escape_string($conn, $locationId) . ",'" .  
           mysqli_real_escape_string($conn, $formatedDateTime)  . "'," . 
