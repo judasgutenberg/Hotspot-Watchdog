@@ -19,4 +19,4 @@ Using the NodeMCU ESP8266 board, the BME680 board, a relay board, and the Moxee,
 
 ![alt text](watchdog.jpg?raw=true)
 
-To be clear, the three PHP files belong on a web server you control that runs PHP and MySQL.  You will need to change config.php to put your MySQL login information in there and create a table called weather_data by running weather.sql.  The .ino and .h files go into a directory together in your Arduino sketch directory so you can write them to whatever board you have that is Arduino-compatible and has WiFi (I used the ESP8266).  The two images are just to illustrate this README file.
+To be clear, regarding the files in this repository, the three PHP files belong on a web server you control that runs PHP and MySQL.  You will need to change config.php to put your MySQL login information in there and create a table called weather_data by running weather.sql.  The .ino and .h files go into a directory together in your Arduino sketch directory so you can write them to whatever board you have that is Arduino-compatible and has WiFi (I used the ESP8266).  The two images are just to illustrate this README file.
