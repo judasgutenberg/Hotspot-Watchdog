@@ -4,19 +4,14 @@
 //of course in php it's all kind of bleh
 //gus mueller, April 7 2022
 //////////////////////////////////////////////////////////////
- 
 
 //ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
 //error_reporting(E_ALL);
 
-
-
 include("config.php");
 
-
 $conn = mysqli_connect($servername, $username, $password, $database);
-
 
 $mode = "";
 
@@ -37,13 +32,10 @@ if($_REQUEST) {
 			$out = ["error"=>"bad database connection"];
 		} else {
 			$scale = $_REQUEST["scale"];
-			
 			if($scale == ""  || $scale == "fine") {
-			
 				$sql = "SELECT * FROM " . $database . ".weather_data  
 				WHERE recorded > DATE_ADD(NOW(), INTERVAL -1 DAY) AND location_id=" . $locationId . " 
 				ORDER BY weather_data_id ASC";
-				
 			} else {
 				if($scale == "hour") {
 					$sql = "SELECT
@@ -61,7 +53,6 @@ if($_REQUEST) {
 						GROUP BY YEAR(recorded), DAYOFYEAR(recorded)
 					 	ORDER BY weather_data_id ASC";
 				}
-			
 			}
 			/*
 			//using averages didn't work for some reason:
@@ -81,10 +72,8 @@ if($_REQUEST) {
 				array_push($out, $row);
 			}
 		}
-		$method  = "read";
-		
+		$method  = "read";	
 	} else if ($mode == "saveData") { //save data
- 
       if(!$conn) {
         $out = ["error"=>"bad database connection"];
       } else {
@@ -93,17 +82,17 @@ if($_REQUEST) {
         $temperature = $arrData[0];
         $pressure = intval($arrData[1]);
         $humidity = $arrData[2];
-	$gasMetric = "NULL";
-	if(count($arrData)>3) {
-		$gasMetric = $arrData[3];
-	}
+        $gasMetric = "NULL";
+        if(count($arrData)>3) {
+          $gasMetric = $arrData[3];
+        }
         $sql = "INSERT INTO weather_data(location_id, recorded, temperature, pressure, humidity, gas_metric, wind_direction, precipitation, wind_speed, wind_increment) VALUES (" . 
           mysqli_real_escape_string($conn, $locationId) . ",'" .  
           mysqli_real_escape_string($conn, $formatedDateTime)  . "'," . 
           mysqli_real_escape_string($conn, $temperature) . "," . 
           mysqli_real_escape_string($conn, $pressure) . "," . 
           mysqli_real_escape_string($conn, $humidity) . "," . 
-		   mysqli_real_escape_string($conn, $gasMetric) .
+          mysqli_real_escape_string($conn, $gasMetric) .
           ",NULL,NULL,NULL,NULL)";
         //echo $sql;
         if($storagePassword == $_REQUEST["storagePassword"]) { //prevents malicious data corruption
