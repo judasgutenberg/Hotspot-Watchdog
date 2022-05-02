@@ -35,7 +35,7 @@ float altitude(const int32_t press, const float seaLevel) {
 
 #include "config.h"
 
-
+bool timeOffset = 0;
 bool glblRemote = false;
 ESP8266WebServer server(80); //Server on port 80
 
@@ -173,6 +173,7 @@ void sendRemoteData(String datastring) {
       //let's try a simpler connection and if that fails, then reboot moxee
       clientGet.stop();
       if( clientGet.connect(hostGet, httpGetPort)){
+       timeOffset = timeOffset + 20000; //in case two probes are stepping on each other, make this one skew a 20 seconds from where it tried to upload data
        clientGet.println("GET / HTTP/1.1");
        clientGet.print("Host: ");
        clientGet.println(hostGet);
@@ -215,7 +216,7 @@ void rebootMoxee() {  //moxee hotspot is so stupid that it has no watchdog.  so 
 
 //LOOP----------------------------------------------------
 void loop(void){
-  long nowTime = millis();
+  long nowTime = millis() + timeOffset;
   if(nowTime - ((nowTime/(1000 * secondsGranularity) )*(1000 * secondsGranularity)) == 0 ) {  //send data to backend server every <secondsGranularity> seconds or so
     glblRemote = true;
     handleWeatherData();
