@@ -35,7 +35,7 @@ float altitude(const int32_t press, const float seaLevel) {
 
 #include "config.h"
 
-bool timeOffset = 0;
+int timeOffset = 0;
 bool glblRemote = false;
 ESP8266WebServer server(80); //Server on port 80
 
