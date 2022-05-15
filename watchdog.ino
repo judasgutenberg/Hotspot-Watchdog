@@ -39,7 +39,7 @@ int timeOffset = 0;
 bool glblRemote = false;
 ESP8266WebServer server(80); //Server on port 80
 
-int moxeePowerLine = 14;
+int moxeePowerSwitch = 14;
 
 //ESP8266's home page:----------------------------------------------------
 void handleRoot() {
@@ -106,8 +106,8 @@ String NullifyOrNumber(double inVal) {
 
 //SETUP----------------------------------------------------
 void setup(void){
-  pinMode(moxeePowerLine, OUTPUT);
-  digitalWrite(moxeePowerLine, HIGH);
+  pinMode(moxeePowerSwitch, OUTPUT);
+  digitalWrite(moxeePowerSwitch, HIGH);
   Serial.begin(115200);
   WiFi.begin(ssid, password);     //Connect to your WiFi router
   Serial.println("");
@@ -205,13 +205,13 @@ void sendRemoteData(String datastring) {
 }
 
 void rebootMoxee() {  //moxee hotspot is so stupid that it has no watchdog.  so here i have a little algorithm to reboot it.
-  digitalWrite(moxeePowerLine, LOW);
+  digitalWrite(moxeePowerSwitch, LOW);
   delay(7000);
-  digitalWrite(moxeePowerLine, HIGH);
+  digitalWrite(moxeePowerSwitch, HIGH);
   delay(4000);
-  digitalWrite(moxeePowerLine, LOW);
+  digitalWrite(moxeePowerSwitch, LOW);
   delay(4000);
-  digitalWrite(moxeePowerLine, HIGH);
+  digitalWrite(moxeePowerSwitch, HIGH);
 }
 
 //LOOP----------------------------------------------------
