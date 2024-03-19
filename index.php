@@ -106,6 +106,7 @@ echo "<tr><td>Time Scale:</td><td>" . genericSelect("scaleDropdown", "scale", "f
 <br>  
 
 <script>
+let glblChart = null;
 //Graphs visit: https://www.chartjs.org
 let temperatureValues = [];
 let humidityValues = [];
@@ -113,7 +114,11 @@ let pressureValues = [];
 let timeStamp = [];
 
 function showGraph(locationId){
+	if(glblChart){
+		glblChart.destroy();
+	}
     let ctx = document.getElementById("Chart").getContext('2d');
+ 
     let Chart2 = new Chart(ctx, {
         type: 'line',
         data: {
@@ -146,6 +151,7 @@ function showGraph(locationId){
             ],
         },
         options: {
+ 
             hover: {mode: null},
             title: {
                     display: true,
@@ -174,13 +180,13 @@ function showGraph(locationId){
             }
         }
     });
-
+	return Chart2;
 }
 
 //On Page load show graphs
 window.onload = function() {
   console.log(new Date().toLocaleTimeString());
-  showGraph(5,10,4,58);
+  //showGraph(5,10,4,58);
 };
 
 //Ajax script to get ADC voltage at every 5 Seconds 
@@ -194,6 +200,7 @@ getData("<?php echo gvfw("locationId")?>");
   //; //50000mSeconds update rate
  
 function getData(locationId) {
+	//console.log("got data");
 	let scale = document.getElementById('scaleDropdown')[document.getElementById('scaleDropdown').selectedIndex].value;
 	let xhttp = new XMLHttpRequest();
 	let endpointUrl = "http://randomsprocket.com/weather/data.php?scale=" + scale + "&mode=getData&locationId=" + locationId;
@@ -205,6 +212,7 @@ function getData(locationId) {
 			pressureValues = [];
 			timeStamp = [];
 			let time = new Date().toLocaleTimeString();
+			//console.log(this.responseText);
 			let dataObject = JSON.parse(this.responseText); 
 			//let tbody = document.getElementById("tableBody");
 			//tbody.innerHTML = '';
@@ -235,8 +243,8 @@ function getData(locationId) {
 				cell3.innerHTML = humidity;
 				*/
 			}
-	 
-			showGraph(locationId);  //Update Graphs
+ 
+			glblChart = showGraph(locationId);  //Update Graphs
 	
 	    }
 	  };
