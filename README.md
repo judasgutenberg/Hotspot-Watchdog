@@ -24,4 +24,4 @@ To be clear, regarding the files in this repository, the three PHP files belong 
 
 Possible changes:  using an optoisolator instead of a relay, as this application does not require a zero-ohm-in-both-directions switch to bridge the Moxee power button signals.
 
-Note: the most advanced and bug-free version of this code is now in my ESP8266 Remote repository.  Follow the hardware instuctions above, but use the Arduino code found in this repository: https://github.com/judasgutenberg/Esp8266_RemoteControl
+Note: the most advanced, responsive, and bug-free version of this code is now part of my ESP8266 Remote repository.  Follow the hardware instuctions above, but use the Arduino code found in this repository: https://github.com/judasgutenberg/Esp8266_RemoteControl. Obviously, that code can do a lot more than just perform Hotspot-Watchdog tasks.  But its Hotspot-Watchdog functionality works better than the old version found in this repository.
