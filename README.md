@@ -23,3 +23,5 @@ A good way to test if this system is working once constructed is to place the Mo
 To be clear, regarding the files in this repository, the three PHP files belong on a web server you control that runs PHP and MySQL.  You will need to change config.php to put your MySQL login information in there and create a table called weather_data by running weather.sql.  The .ino and .h files go into a directory together in your Arduino sketch directory so you can write them to whatever board you have that is Arduino-compatible and has WiFi (I used a NodeMCU built around a ESP8266).  The two images are just to illustrate this README file.
 
 Possible changes:  using an optoisolator instead of a relay, as this application does not require a zero-ohm-in-both-directions switch to bridge the Moxee power button signals.
+
+Note: the most advanced and bug-free version of this code is now in my ESP8266 Remote repository.  Follow the hardware instuctions above, but use the Arduino code found in this repository: https://github.com/judasgutenberg/Esp8266_RemoteControl
